@@ -144,21 +144,6 @@ bool executeShellCommands(const char *command, char *const args[]) {
     return false;
 }
 
-bool isDefaultHosts(const char *filename) {
-    FILE *file = fopen(filename, "r");
-    if(!file) return false;
-    char line[1024];
-    while(fgets(line, sizeof(line), file)) {
-        line[strcspn(line, "\r\n")] = 0;
-        if(strcmp(line, "127.0.0.1 localhost") != 0 && strcmp(line, "::1 localhost") != 0) {
-            fclose(file);
-            return true;
-        }
-    }
-    fclose(file);
-    return false;
-}
-
 bool canDaemonRun(void) {
     char *enableDaemon = grepProp("enable_daemon", configScriptPath);
     char *isDaemonRunning = grepProp("is_daemon_running", configScriptPath);

@@ -80,7 +80,6 @@ bool removePackageFromList(const char *packageName);
 bool addPackageToList(const char *packageName);
 bool eraseFile(const char *file);
 bool executeShellCommands(const char *command, char *const args[]);
-bool isDefaultHosts(const char *filename);
 bool canDaemonRun(void);
 bool copyTextFile(const char *src, const char *dest);
 char *grepProp(const char *variableName, const char *propFile);
