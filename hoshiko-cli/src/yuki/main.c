@@ -56,26 +56,8 @@ int main(void) {
         wipePointers();
         executeShellCommands("exit", (char * const[]){ "exit", "1", NULL });
     }
-    // always have a backup of the daemonPackageLists because we need to have to use this
-    // backup as a failsafe method when the crap didn't import properly.
-    if(executeShellCommands("su", (char * const[]){"su", "-c", "cp", "-af", daemonPackageLists, "/data/adb/Re-Malwack/previousDaemonList", NULL}) != 0) abort_instance("main-yuki", "Failed to backup the daemon package lists, please try again!");
-    consoleLog(LOG_LEVEL_INFO, "main-yuki", "Reading encoded package list...");
-    FILE *packageLists = fopen(daemonPackageLists, "rb");
-    if(!packageLists) abort_instance("main-yuki", "Failed to open package list file.");
-    int i = 0;
-    char **packageArray = malloc(sizeof(char *) * 300);
-    char stringsToFetch[1000];
-    while(fgets(stringsToFetch, sizeof(stringsToFetch), packageLists) && i < 100) {
-        if(stringsToFetch[0] == '\0') continue;
-        stringsToFetch[strcspn(stringsToFetch, "\n")] = 0;
-        packageArray[i] = malloc(sizeof(char *));
-        if(!packageArray[i]) abort_instance("main-yuki", "Failed to prepare %d st/th array for caching package list.", i);
-        sprintf(packageArray[i], "%s", stringsToFetch);
-        i++;
-    }
-    fclose(packageLists);
-    consoleLog(LOG_LEVEL_DEBUG, "main-yuki", "Loaded %d packages into blocklist", i);
-    consoleLog(LOG_LEVEL_DEBUG, "main-yuki", "Entering blocklist monitoring loop...");
+    // set the variable to true to load the packages for the first time.
+    loadPackagesAgain = true;
     while(canDaemonRun()) {
         // put the pid of this daemon process.
         putConfig("current_daemon_pid", getpid());
@@ -91,12 +73,14 @@ int main(void) {
         }
         // load packages again.
         if(loadPackagesAgain) {
-            // clean the previous shits:
-            free(packageArray);
-            i = 0;
-            packageArray = malloc(sizeof(char *) * 300);
-            packageLists = fopen(daemonPackageLists, "r");
+            int i = 0;
+            char **packageArray = malloc(sizeof(char *) * 300);
+            char stringsToFetch[1000];
+            FILE *packageLists = fopen(daemonPackageLists, "r");
             if(!packageLists) abort_instance("main-yuki", "Failed to reopen package list file.");
+            // always have a backup of the daemonPackageLists because we need to have to use this
+            // backup as a failsafe method when the crap didn't import properly.
+            if(executeShellCommands("su", (char * const[]){"su", "-c", "cp", "-af", daemonPackageLists, "/data/adb/Re-Malwack/previousDaemonList", NULL}) != 0) abort_instance("main-yuki", "Failed to backup the daemon package lists, please try again!");
             while(fgets(stringsToFetch, sizeof(stringsToFetch), packageLists) && i < 100) {
                 if(stringsToFetch[0] == '\0') continue;
                 stringsToFetch[strcspn(stringsToFetch, "\n")] = 0;
@@ -106,7 +90,8 @@ int main(void) {
                 i++;
             }
             fclose(packageLists);
-            consoleLog(LOG_LEVEL_DEBUG, "main-yuki", "Reloaded %d packages into blocklist", i);
+            consoleLog(LOG_LEVEL_DEBUG, "main-yuki", "Loaded %d packages into blocklist", i);
+            consoleLog(LOG_LEVEL_DEBUG, "main-yuki", "Entering blocklist monitoring loop...");
             continue;
         }
         if(strcmp(grepProp("enable_daemon", configScriptPath), "1") == 0) {
