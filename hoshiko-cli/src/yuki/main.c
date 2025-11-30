@@ -19,9 +19,11 @@
 // vars:
 int blockedMod = 0;
 int blockedSys = 0;
+static int i = 0;
 bool useStdoutForAllLogs = false;
 bool shouldNotForceReMalwackUpdateNextTime = false;
 static bool loadPackagesAgain = false;
+static char **packageArray;
 char *version = NULL;
 char *versionCode = NULL;
 char *daemonPackageLists = "/data/adb/Re-Malwack/remalwack-package-lists.txt";
@@ -73,9 +75,8 @@ int main(void) {
         }
         // load packages again.
         if(loadPackagesAgain) {
-            int i = 0;
-            char **packageArray = malloc(sizeof(char *) * 300);
             char stringsToFetch[1000];
+            packageArray = malloc(sizeof(char *) * 300);
             FILE *packageLists = fopen(daemonPackageLists, "r");
             if(!packageLists) abort_instance("main-yuki", "Failed to reopen package list file.");
             // always have a backup of the daemonPackageLists because we need to have to use this
