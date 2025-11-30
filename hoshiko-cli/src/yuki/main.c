@@ -21,6 +21,7 @@ int blockedMod = 0;
 int blockedSys = 0;
 bool useStdoutForAllLogs = false;
 bool shouldNotForceReMalwackUpdateNextTime = false;
+static bool loadPackagesAgain = false;
 char *version = NULL;
 char *versionCode = NULL;
 char *daemonPackageLists = "/data/adb/Re-Malwack/remalwack-package-lists.txt";
@@ -62,13 +63,14 @@ int main(void) {
     FILE *packageLists = fopen(daemonPackageLists, "rb");
     if(!packageLists) abort_instance("main-yuki", "Failed to open package list file.");
     int i = 0;
-    char packageArray[MAX_PACKAGES][PACKAGE_NAME_SIZE] = {0};
-    char stringsToFetch[PACKAGE_NAME_SIZE];
-    while(fgets(stringsToFetch, sizeof(stringsToFetch), packageLists) && i < MAX_PACKAGES) {
+    char **packageArray = malloc(sizeof(char *) * 300);
+    char stringsToFetch[1000];
+    while(fgets(stringsToFetch, sizeof(stringsToFetch), packageLists) && i < 100) {
         if(stringsToFetch[0] == '\0') continue;
         stringsToFetch[strcspn(stringsToFetch, "\n")] = 0;
-        strncpy(packageArray[i], stringsToFetch, PACKAGE_NAME_SIZE - 1);
-        packageArray[i][PACKAGE_NAME_SIZE - 1] = '\0';
+        packageArray[i] = malloc(sizeof(char *));
+        if(!packageArray[i]) abort_instance("main-yuki", "Failed to prepare %d st/th array for caching package list.", i);
+        sprintf(packageArray[i], "%s", stringsToFetch);
         i++;
     }
     fclose(packageLists);
@@ -87,6 +89,26 @@ int main(void) {
             system(combineStringsFormatted("su -c rm -rf %s", killDaemon));
             killDaemonWhenSignaled(1);
         }
+        // load packages again.
+        if(loadPackagesAgain) {
+            // clean the previous shits:
+            free(packageArray);
+            i = 0;
+            packageArray = malloc(sizeof(char *) * 300);
+            packageLists = fopen(daemonPackageLists, "r");
+            if(!packageLists) abort_instance("main-yuki", "Failed to reopen package list file.");
+            while(fgets(stringsToFetch, sizeof(stringsToFetch), packageLists) && i < 100) {
+                if(stringsToFetch[0] == '\0') continue;
+                stringsToFetch[strcspn(stringsToFetch, "\n")] = 0;
+                packageArray[i] = malloc(sizeof(char *));
+                if(!packageArray[i]) abort_instance("main-yuki", "Failed to prepare %d st/th array for caching package list.", i);
+                sprintf(packageArray[i], "%s", stringsToFetch);
+                i++;
+            }
+            fclose(packageLists);
+            consoleLog(LOG_LEVEL_DEBUG, "main-yuki", "Reloaded %d packages into blocklist", i);
+            continue;
+        }
         if(strcmp(grepProp("enable_daemon", configScriptPath), "1") == 0) {
             if(access(daemonLockFileStuck, F_OK) == 0) {
                 consoleLog(LOG_LEVEL_DEBUG, "main-yuki", "Waiting for user configurations to finish...");
@@ -95,17 +117,7 @@ int main(void) {
             }
             if(access(daemonLockFileSuccess, F_OK) == 0) {
                 consoleLog(LOG_LEVEL_DEBUG, "main-yuki", "A package list update was triggered. Reloading packages...");
-                packageLists = fopen(daemonPackageLists, "r");
-                if(!packageLists) abort_instance("main-yuki", "Failed to reopen package list file.");
-                i = 0;
-                while(fgets(stringsToFetch, sizeof(stringsToFetch), packageLists) != NULL && i < MAX_PACKAGES) {
-                    stringsToFetch[strcspn(stringsToFetch, "\n")] = 0; // strip newline
-                    strncpy(packageArray[i], stringsToFetch, PACKAGE_NAME_SIZE - 1);
-                    packageArray[i][PACKAGE_NAME_SIZE - 1] = '\0';
-                    i++;
-                }
-                fclose(packageLists);
-                consoleLog(LOG_LEVEL_DEBUG, "main-yuki", "Reloaded %d packages into blocklist", i);
+                loadPackagesAgain = true;
                 remove(daemonLockFileSuccess);
             }
             else if(access(daemonLockFileFailure, F_OK) == 0) {
@@ -117,6 +129,7 @@ int main(void) {
                     remove(daemonLockFileFailure);
                     consoleLog(LOG_LEVEL_INFO, "main-yuki", "Reset finished successfully! Skipping this loop and building list again...");
                     // skip this after doing this because i dont want to code too much!
+                    loadPackagesAgain = true;
                     continue;
                 }
             }

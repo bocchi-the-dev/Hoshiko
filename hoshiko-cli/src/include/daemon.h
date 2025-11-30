@@ -50,6 +50,8 @@ extern const char *daemonLockFileStuck;
 extern const char *daemonLockFileSuccess;
 extern const char *systemHostsPath;
 extern const char *killDaemon;
+
+// used for logging shits
 enum elogLevel {
     LOG_LEVEL_INFO,
     LOG_LEVEL_WARN,
@@ -57,18 +59,18 @@ enum elogLevel {
     LOG_LEVEL_ERROR,
     LOG_LEVEL_ABORT
 };
+
+// used to determine the current daemon state.
 enum daemonProcessState {
     RUNNING_RUNABLE,
     NOT_RUNNING_CANT_RUN
 };
+
+// used for toggling the daemon shit
 enum daemonState {
     ENABLE_ENABLED,
     DISABLE_DISABLED
 };
-
-// macros:
-#define MAX_PACKAGES 100
-#define PACKAGE_NAME_SIZE 256
 
 // functions:
 int putConfig(const char *variableName, const int variableValue);
