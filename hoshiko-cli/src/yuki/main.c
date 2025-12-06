@@ -42,6 +42,7 @@ const char *killDaemon = "/data/adb/Re-Malwack/.daemon3";
 const char *systemHostsPath = "/system/etc/hosts";
 
 int main(void) {
+    makeDir(daemonLogs);
     version = grepProp("version", modulePropFile);
     if(!version) abort_instance("main-yuki", "Could not find 'version' in module.prop");
     versionCode = grepProp("versionCode", modulePropFile);

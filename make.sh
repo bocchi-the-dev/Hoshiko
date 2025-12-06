@@ -92,7 +92,7 @@ function buildTarget() {
     idx=$1
     src="${TARGETS[$idx]}"
     out="${OUTPUT_BINARY_NAMES[$idx]}"
-    echo -e "\e[0;35mmake: Info: Building requested binary...\e[0;37m"
+    echo -e "\e[0;35mmake: Info: Building $(echo "${OUTPUT_BINARY_NAMES[$idx]}" | cut -c 9-12)...\e[0;37m"
     if ! "$CC" $CFLAGS "$HOSHIKO_SOURCES" -I"$HOSHIKO_HEADERS" "$src" -o "$OUTPUT_DIR/$out" &> "$BUILD_LOGFILE"; then
         printf "\033[0;31mmake: Error: Build failed (%s). Check %s\033[0m\n" "$out" "$BUILD_LOGFILE"
         exit 1

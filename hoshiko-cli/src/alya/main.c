@@ -54,6 +54,7 @@ struct option longOptions[] = {
 };
 
 int main(int argc, char *argv[]) {
+    makeDir(daemonLogs);
     printBannerWithRandomFontStyle();
     checkIfModuleExists();
     appendAlyaProps();

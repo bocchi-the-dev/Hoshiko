@@ -191,9 +191,8 @@ char *grepProp(const char *variableName, const char *propFile) {
     while(fgets(theLine, sizeof(theLine), filePointer)) {
         if(strncmp(theLine, variableName, lengthOfTheString) == 0 && theLine[lengthOfTheString] == '=') {
             strtok(theLine, "=");
-            char *value = strtok(NULL, "\n");
-            if(value) {
-                char *result = strdup(value);
+            if(strtok(NULL, "\n")) {
+                char *result = strdup(strtok(NULL, "\n"));
                 fclose(filePointer);
                 return result;
             }
@@ -260,12 +259,12 @@ void consoleLog(enum elogLevel loglevel, const char *service, const char *messag
     }
     switch(loglevel) {
         case LOG_LEVEL_INFO:
-            if(!toFile) fprintf(out, "\033[2;30;47m- ");
-            else fprintf(out, "INFO: %s: ", service);
+            if(!toFile) fprintf(out, "\033[2;30;47mINFO: ");
+            else fprintf(out, "INFO: %s(): ", service);
         break;
         case LOG_LEVEL_WARN:
             if(!toFile) fprintf(out, "\033[1;33mWARNING: ");
-            else fprintf(out, "WARNING: %s: ", service);
+            else fprintf(out, "WARNING: %s(): ", service);
         break;
         case LOG_LEVEL_DEBUG:
             // skip dbg texts if we are going to put them in std{out,err}.
@@ -273,15 +272,15 @@ void consoleLog(enum elogLevel loglevel, const char *service, const char *messag
                 va_end(args);
                 return;
             }
-            else fprintf(out, "DEBUG: %s: ", service);
+            else fprintf(out, "DEBUG: %s(): ", service);
         break;
         case LOG_LEVEL_ERROR:
             if(!toFile) fprintf(out, "\033[0;31mERROR: ");
-            else fprintf(out, "ERROR: %s: ", service);
+            else fprintf(out, "ERROR: %s(): ", service);
         break;
         case LOG_LEVEL_ABORT:
             if(!toFile) fprintf(out, "\033[0;31mABORT: ");
-            else fprintf(out, "ABORT: %s: ", service);
+            else fprintf(out, "ABORT: %s(): ", service);
         break;
     }
     #pragma clang diagnostic push
@@ -357,7 +356,7 @@ void printBannerWithRandomFontStyle() {
 void pauseADBlock() {
     if(access(hostsBackupPath, F_OK) == 0) consoleLog(LOG_LEVEL_WARN, "pauseADBlock", "Protection is already paused!");
     refreshBlockedCounts(); // refresh it because both default val is set to 0
-    if(blockedMod == 0 && blockedSys == 0) abort_instance("pauseADBlock", "You can't pause Re-Malwack while the hosts file is reset. Please reset the hosts file first.");
+    if(blockedMod + blockedSys == 0) abort_instance("pauseADBlock", "You can't pause Re-Malwack while the hosts file is reset. Please reset the hosts file first.");
     consoleLog(LOG_LEVEL_INFO, "pauseADBlock", "Trying to pause Re-Malwack's protection...");
     FILE *backupHostsFile = fopen(hostsBackupPath, "w");
     if(!backupHostsFile) abort_instance("pauseADBlock", "Failed to open hosts backup file: %s", hostsBackupPath);
@@ -405,14 +404,15 @@ void resumeADBlock() {
         // i've come to the conclusion that i should have an boolean for this action
         // to stop running --update-hosts everytime.
         if(!shouldNotForceReMalwackUpdateNextTime) {
-            if(executeShellCommands("/data/adb/modules/Re-Malwack/rmlwk.sh", (char * const[]){"/data/adb/modules/Re-Malwack/rmlwk.sh", "--update-hosts"}) == 0) shouldNotForceReMalwackUpdateNextTime = true;
+            if(executeShellCommands("/data/adb/modules/Re-Malwack/rmlwk.sh", (char * const[]){"/data/adb/modules/Re-Malwack/rmlwk.sh", "--hoshiko", "--update-hosts"}) == 0) shouldNotForceReMalwackUpdateNextTime = true;
         }
     }
 }
 
 void help(const char *wehgcfbkfbjhyghxdrbtrcdfv) {
+    char *binaryName = basename(wehgcfbkfbjhyghxdrbtrcdfv);
     printf("Usage:\n");
-    printf("  %s [OPTION] [ARGUMENTS]\n\n", basename(wehgcfbkfbjhyghxdrbtrcdfv));
+    printf("  %s [OPTION] [ARGUMENTS]\n\n", binaryName);
     printf("Options:\n");
     printf("-a  |  --add-app <app_name>\t\tAdd an application to the list to stop ad blocker when the app is opened.\n");
     printf("-r  |  --remove-app <app_name>\tRemove an application from the list.\n");
@@ -422,12 +422,12 @@ void help(const char *wehgcfbkfbjhyghxdrbtrcdfv) {
     printf("-d  |  --disable-daemon\n");
     printf("-h  |  --help\t\t\tDisplay this help message.\n\n");
     printf("Examples:\n");
-    printf("  %s --add-app com.example.myapp\n", basename(wehgcfbkfbjhyghxdrbtrcdfv));
-    printf("  %s --remove-app com.example.myapp\n", basename(wehgcfbkfbjhyghxdrbtrcdfv));
-    printf("  %s --export-package-list apps.txt\n", basename(wehgcfbkfbjhyghxdrbtrcdfv));
-    printf("  %s --import-package-list apps.txt\n", basename(wehgcfbkfbjhyghxdrbtrcdfv));
-    printf("  %s --enable-daemon\n", basename(wehgcfbkfbjhyghxdrbtrcdfv));
-    printf("  %s --disable-daemon\n", basename(wehgcfbkfbjhyghxdrbtrcdfv));
+    printf("  %s --add-app com.example.myapp\n", binaryName);
+    printf("  %s --remove-app com.example.myapp\n", binaryName);
+    printf("  %s --export-package-list apps.txt\n", binaryName);
+    printf("  %s --import-package-list apps.txt\n", binaryName);
+    printf("  %s --enable-daemon\n", binaryName);
+    printf("  %s --disable-daemon\n", binaryName);
 }
 
 void freePointer(void **ptr) {

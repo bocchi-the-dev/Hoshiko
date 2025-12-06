@@ -51,6 +51,9 @@ extern const char *daemonLockFileSuccess;
 extern const char *systemHostsPath;
 extern const char *killDaemon;
 
+// macro function for creating directories regardless of their parent directory.
+#define makeDir(thisDirName) executeShellCommands("su", (char * const[]){"su", "-c", "mkdir", "-p", basename(thisDirName)});
+
 // used for logging shits
 enum elogLevel {
     LOG_LEVEL_INFO,
@@ -84,15 +87,15 @@ bool canDaemonRun(void);
 bool copyTextFile(const char *src, const char *dest);
 char *grepProp(const char *variableName, const char *propFile);
 char *combineStringsFormatted(const char *format, ...);
-char *getCurrentPackage();
+char *getCurrentPackage(void);
 void consoleLog(enum elogLevel loglevel, const char *service, const char *message, ...);
 void abort_instance(const char *service, const char *format, ...);
-void printBannerWithRandomFontStyle();
-void pauseADBlock();
-void resumeADBlock();
+void printBannerWithRandomFontStyle(void);
+void pauseADBlock(void);
+void resumeADBlock(void);
 void help(const char *wehgcfbkfbjhyghxdrbtrcdfv);
 void freePointer(void **ptr);
-void refreshBlockedCounts();
+void refreshBlockedCounts(void);
 void reWriteModuleProp(const char *desk);
 void killDaemonWhenSignaled(int sig);
 void checkIfModuleExists(void);
