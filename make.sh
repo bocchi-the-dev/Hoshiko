@@ -38,6 +38,9 @@ cd "$(realpath "$(dirname "$0")")" || {
     exit 1
 }
 
+# uhrm ig
+[ ! -d "${CC_ROOT}" ] && CC_ROOT="/workspaces/android-ndk-r27d/toolchains/llvm/prebuilt/linux-x86_64/bin"
+
 # print the banner:
 printf "\033[0;31mM\"\"MMMMM\"\"MM                   dP       oo dP\n"
 printf "M  MMMMM  MM                   88          88\n"
