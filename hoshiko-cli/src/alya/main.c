@@ -20,7 +20,7 @@
 // vars:
 int blockedMod = 0;
 int blockedSys = 0;
-bool useStdoutForAllLogs = true;
+bool useStdoutForAllLogs = false;
 bool shouldNotForceReMalwackUpdateNextTime = false;
 char *version = NULL;
 char *versionCode = NULL;
