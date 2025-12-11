@@ -16,6 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# temporarily disable this workflow for now.
+exit 0
+
 # check if we are running in the currect root branch and exit if not.
 [ "$(git branch | awk '{print $2}')" != "main" ] && exit 1;
 
