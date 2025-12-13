@@ -24,7 +24,7 @@ bool useStdoutForAllLogs = false;
 bool shouldNotForceReMalwackUpdateNextTime = false;
 char *version = NULL;
 char *versionCode = NULL;
-char *daemonPackageLists = "/data/adb/Re-Malwack/remalwack-package-lists.txt";
+char *daemonPackageLists = "/data/adb/Re-Malwack/hoshiko-package-lists.txt";
 const char *configScriptPath = "/data/adb/Re-Malwack/config.sh";
 const char *MODPATH = "/data/adb/modules/Re-Malwack";
 const char *modulePropFile = "/data/adb/modules/Re-Malwack/module.prop";
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     printBannerWithRandomFontStyle();
     checkIfModuleExists();
     appendAlyaProps();
-    if(getuid()) abort_instance("main-alya", "This binary should be running as root.");
+    if(getuid()) abort_instance("main-alya", "This binary should be running under root.");
     int opt;
     int longindex = 0;
     while((opt = getopt_long(argc, argv, "ha:r:i:e:xdy:k", longOptions, &longindex)) != -1) {

@@ -26,7 +26,7 @@ static bool loadPackagesAgain = false;
 static char **packageArray;
 char *version = NULL;
 char *versionCode = NULL;
-char *daemonPackageLists = "/data/adb/Re-Malwack/remalwack-package-lists.txt";
+char *daemonPackageLists = "/data/adb/Re-Malwack/hoshiko-package-lists.txt";
 char *previousDaemonPackageLists = "/data/adb/Re-Malwack/previousDaemonList";
 const char *configScriptPath = "/data/adb/Re-Malwack/config.sh";
 const char *MODPATH = "/data/adb/modules/Re-Malwack";
@@ -47,15 +47,15 @@ int main(void) {
     if(!version) abort_instance("main-yuki", "Could not find 'version' in module.prop");
     versionCode = grepProp("versionCode", modulePropFile);
     if(!versionCode) abort_instance("main-yuki", "Could not find 'versionCode' in module.prop");
-    consoleLog(LOG_LEVEL_INFO, "main-yuki", "Re-Malwack %s (versionCode: %s) is starting...", version, versionCode);
+    consoleLog(LOG_LEVEL_INFO, "main-yuki", "Hoshiko's yuki with Re-Malwack %s (versionCode: %s) is starting...", version, versionCode);
     printBannerWithRandomFontStyle();
     checkIfModuleExists();
     appendAlyaProps();
-    if(getuid()) abort_instance("main-yuki", "daemon is not running as root.");
+    if(getuid()) abort_instance("main-yuki", "daemon is not running under root privilages.");
     // force stop termux instance if it's found to be in top. Just to be sure that 
     // termux shouldn't handle the loop and it can't run some basic commands, that's why im stopping termux users.
     if(getCurrentPackage() != NULL && strcmp(getCurrentPackage(), "com.termux") == 0) {
-        consoleLog(LOG_LEVEL_WARN, "main-yuki", "Sorry dear termux user, you CANNOT run this daemon in termux. Termux is not supported by Re-Malwack Daemon.");
+        consoleLog(LOG_LEVEL_WARN, "main-yuki", "Sorry termux user, you have to go.");
         wipePointers();
         executeShellCommands("exit", (char * const[]){ "exit", "1", NULL });
     }

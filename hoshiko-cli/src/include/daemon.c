@@ -70,15 +70,6 @@ bool isPackageInList(const char *packageName) {
     return false;
 }
 
-bool addPackageToList(const char *packageName) {
-    FILE *packageFile = fopen(daemonPackageLists, "a");
-    if(!packageFile) abort_instance("addPackageToList", "Failed to open the package lists file, please run this command again or report this issue to the devs.");
-    fprintf(packageFile, "\n%s", packageName);
-    consoleLog(LOG_LEVEL_INFO, "addPackageToList", "Successfully added %s into the list, the daemon will add the packages to the list after a short period of time.", packageName);
-    fclose(packageFile);
-    return true;
-}
-
 bool removePackageFromList(const char *packageName) {
     FILE *packageFile = fopen(daemonPackageLists, "r");
     if(!packageFile) abort_instance("removePackageFromList", "Failed to open the package lists file, please run this command again or report this issue to the devs.");
@@ -123,24 +114,27 @@ bool executeShellCommands(const char *command, char *const args[]) {
             abort_instance("executeShellCommands", "Failed to fork to continue.");
         break;
         case 0:
-            // throw output to /dev/null
-            int devNull = open("/dev/null", O_WRONLY);
+            // throw output to /dev/null- LOGS THIS TIME!
+            consoleLog(LOG_LEVEL_DEBUG, "executeShellCommands", "Redirecting stdout/stderr output to log file..");
+            consoleLog(LOG_LEVEL_DEBUG, "executeShellCommands", "The log could contain information that are not supposed to be shared or it might be blank, but who knows?");
+            int devNull = open(daemonLogs, O_WRONLY);
             if(devNull == -1) exit(EXIT_FAILURE);
             dup2(devNull, STDOUT_FILENO);
             dup2(devNull, STDERR_FILENO);
             close(devNull);
             execvp(command, args);
-            consoleLog(LOG_LEVEL_ERROR, "executeShellCommands", "Failed to execute command");
         break;
         default:
             consoleLog(LOG_LEVEL_DEBUG, "executeShellCommands", "Waiting for current %d to finish", ProcessID);
+            consoleLog(LOG_LEVEL_DEBUG, "executeShellCommands", "Finished loggin' shit.");
             int status;
             wait(&status);
             return (WIFEXITED(status)) ? WEXITSTATUS(status) : false;
-    }
+        }
     // me: shut up compiler
     // evil gurt: yo
     // me: shut up
+    consoleLog(LOG_LEVEL_DEBUG, "executeShellCommands", "Finished loggin' shit.");
     return false;
 }
 
@@ -348,9 +342,7 @@ void printBannerWithRandomFontStyle() {
         "8 8888        8     `8888888P'     `Y8888P ,88P' 8 8888        8  8 8888 8 8888     `Y8.  `8888888P'     \033[0m\n";
     const char *banners[] = {banner1, banner2, banner3, banner4, banner5};
     srand((unsigned int)time(NULL));
-    int count = (int)(sizeof(banners) / sizeof(banners[0]));
-    int r = rand() % count;
-    printf("%s\n", banners[r]);
+    printf("%s\n", banners[rand() % (int)(sizeof(banners) / sizeof(banners[0]))]);
 }
 
 void pauseADBlock() {
@@ -373,13 +365,13 @@ void pauseADBlock() {
     chmod(hostsPath, 0644);
     putConfig("adblock_switch", 1);
     refreshBlockedCounts();
-    reWriteModuleProp("Status: Protection is temporarily disabled due to the daemon toggling the module for an app ❌");
+    reWriteModuleProp("Status: Protection is temporarily disabled due to the daemon toggling the module for an app");
 }
 
 void resumeADBlock() {
     consoleLog(LOG_LEVEL_INFO, "resumeADBlock", "Trying to resume protection...");
     if(access(hostsBackupPath, F_OK) == 0) {
-        reWriteModuleProp("Status: Protection is temporarily enabled due to the daemon toggling the module for an app ❌");
+        reWriteModuleProp("Status: Protection is temporarily enabled due to the daemon toggling the module for an app");
         FILE *backupHostsFile = fopen(hostsBackupPath, "r");
         if(!backupHostsFile) abort_instance("resumeADBlock", "Failed to open backup hosts file: %s\nDue to this failure, we are unable to restore previous backed-up hosts.", hostsBackupPath);
         FILE *hostsFile = fopen(hostsPath, "w");
@@ -484,6 +476,7 @@ void killDaemonWhenSignaled(int sig) {
     putConfig("is_daemon_running", NOT_RUNNING_CANT_RUN); 
     putConfig("current_daemon_pid", -1);
     consoleLog(LOG_LEVEL_DEBUG, "killDaemonWhenSignaled", "sig: %d", sig);
+    exit(EXIT_FAILURE);
 }
 
 void checkIfModuleExists(void) {
@@ -510,4 +503,12 @@ void appendAlyaProps(void) {
 void wipePointers() {
     freePointer((void **)&version);
     freePointer((void **)&versionCode);
+}
+
+void addPackageToList(const char *packageName) {
+    FILE *packageFile = fopen(daemonPackageLists, "a");
+    if(!packageFile) abort_instance("addPackageToList", "Failed to open the package lists file, please run this command again or report this issue to the devs.");
+    fprintf(packageFile, "\n%s", packageName);
+    consoleLog(LOG_LEVEL_INFO, "addPackageToList", "Successfully added %s into the list, the daemon will add the packages to the list after a short period of time.", packageName);
+    fclose(packageFile);
 }
