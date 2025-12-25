@@ -29,7 +29,6 @@ char *versionCode = NULL;
 char *daemonPackageLists = "/data/adb/Re-Malwack/hoshiko-package-lists.txt";
 char *previousDaemonPackageLists = "/data/adb/Re-Malwack/previousDaemonList";
 const char *configScriptPath = "/data/adb/Re-Malwack/config.sh";
-const char *MODPATH = "/data/adb/modules/Re-Malwack";
 const char *modulePropFile = "/data/adb/modules/Re-Malwack/module.prop";
 const char *hostsPath = "/data/adb/modules/Re-Malwack/system/etc/hosts";
 const char *hostsBackupPath = "/data/adb/modules/Re-Malwack/hosts.bak";

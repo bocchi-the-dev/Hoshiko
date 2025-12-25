@@ -38,7 +38,6 @@ extern bool shouldNotForceReMalwackUpdateNextTime;
 extern char *version;
 extern char *versionCode;
 extern char *daemonPackageLists;
-extern const char *MODPATH;
 extern const char *modulePropFile;
 extern const char *configScriptPath;
 extern const char *hostsPath;

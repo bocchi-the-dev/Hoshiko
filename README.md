@@ -24,7 +24,7 @@ Before building, make sure you have the following installed:
 * [Android Studio](https://developer.android.com/studio)
 * [Gradle](https://gradle.org/)
 * [Android NDK r27d](https://developer.android.com/ndk/downloads)
-* GNU/Linux or [WSL](https://learn.microsoft.com/en-us/windows/wsl/) with basic development tools (`bash`, `make`, etc.)
+* GNU/Linux or [WSL](https://learn.microsoft.com/en-us/windows/wsl/)
 
 ---
 
@@ -56,16 +56,17 @@ CC_ROOT=/path/to/android-ndk
 | Argument | Description                                              |
 | -------- | -------------------------------------------------------- |
 | `SDK`    | Minimum supported Android SDK version (e.g. `28`)        |
-| `ARCH`   | Target architecture — `arm64`, `arm`, `x86`, or `x86_64` |
+| `ARCH`   | Target architecture — `arm64` or `arm`                   |
+> **NOTE**: We don't support `x86` and `x86_64` architectures.
 
 #### Build targets
-| Target | Description                                              |
+| Target   | Description                                              |
 | -------- | -------------------------------------------------------- |
 | `yuki`   | Builds the hoshiko daemon. |
 | `alya`   | Builds the hoshiko daemon manager. |
-| `all`   | Builds yuki and alya together. |
+| `all`    | Builds yuki and alya together. |
 | `help`   | Shows the available build targets. |
-| `clean`   | Removes the previous built remnants. |
+| `clean`  | Removes the previous built remnants. |
 
 Then build using:
 
@@ -91,7 +92,7 @@ alya -i | --import-package-list <path>          # Import a package list
 alya -x | --enable-daemon                       # Enable the Yuki daemon
 alya -d | --disable-daemon                      # Disable the Yuki daemon
 alya -k | --kill-daemon                         # Kill the Yuki daemon
-alya -l | --lana-app                            # Redirect output to log files instead of stdout
+alya -l | --lana-app                            # Redirect output to log file instead of stdout
 ```
 
 ---
@@ -101,8 +102,8 @@ alya -l | --lana-app                            # Redirect output to log files i
 `Yuki` is Hoshiko’s **background daemon** that monitors and enforces ad-blocking policies.
 
 > **Note:**
-> `Yuki` is designed to run as a background service (e.g., via `init` or another system-level process).
-> Running it inside **Termux** is not recommended.
+> `Yuki` is designed to run as a background service (e.g., via `init`).
+> Running it inside **Termux** is not recommended as it always returns `NULL` on current package request calls. There is a reason to it.
 
 ---
 

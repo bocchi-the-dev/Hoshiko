@@ -79,7 +79,7 @@ bool removePackageFromList(const char *packageName) {
     if(!tempFile) abort_instance("removePackageFromList", "Failed to open a temporary file, please run this command again or report this issue to the devs.");
     char contentFromFile[1028];
     bool status = false;
-    while(fgets(contentFromFile, sizeof(contentFromFile), packageFile) != NULL) {
+    while(fgets(contentFromFile, sizeof(contentFromFile), packageFile)) {
         eraseFile(daemonLockFileStuck);
         contentFromFile[strcspn(contentFromFile, "\n")] = 0;
         if(strcmp(contentFromFile, packageName) == 0) {
@@ -126,7 +126,7 @@ bool executeShellCommands(const char *command, char *const args[]) {
         break;
         default:
             consoleLog(LOG_LEVEL_DEBUG, "executeShellCommands", "Waiting for current %d to finish", ProcessID);
-            consoleLog(LOG_LEVEL_DEBUG, "executeShellCommands", "Finished loggin' shit.");
+            consoleLog(LOG_LEVEL_DEBUG, "executeShellCommands", "Finished loggin' shit - switch");
             int status;
             wait(&status);
             return (WIFEXITED(status)) ? WEXITSTATUS(status) : false;
@@ -134,7 +134,7 @@ bool executeShellCommands(const char *command, char *const args[]) {
     // me: shut up compiler
     // evil gurt: yo
     // me: shut up
-    consoleLog(LOG_LEVEL_DEBUG, "executeShellCommands", "Finished loggin' shit.");
+    consoleLog(LOG_LEVEL_DEBUG, "executeShellCommands", "Finished loggin' shit - function scope");
     return false;
 }
 
@@ -181,7 +181,7 @@ char *grepProp(const char *variableName, const char *propFile) {
         return NULL;
     }
     char theLine[1024];
-    size_t lengthOfTheString = strlen(variableName);
+    size_t lengthOfTheString = strlen(variableName) + 2;
     while(fgets(theLine, sizeof(theLine), filePointer)) {
         if(strncmp(theLine, variableName, lengthOfTheString) == 0 && theLine[lengthOfTheString] == '=') {
             strtok(theLine, "=");
@@ -200,7 +200,7 @@ char *getCurrentPackage() {
     char packageName[100] = {0};
     FILE *fptr = popen("timeout 1 dumpsys 2>/dev/null | grep mFocused | awk '{print $3}' | head -n 1 | awk -F'/' '{print $1}'", "r");
     if(!fptr) abort_instance("getCurrentPackage", "Failed to fetch shell output. Are you running on Android shell?");
-    while(fgets(packageName, sizeof(packageName), fptr) != NULL) {
+    while(fgets(packageName, sizeof(packageName), fptr)) {
         packageName[strcspn(packageName, "\n")] = 0;
         pclose(fptr);
         return strdup(packageName);
@@ -358,7 +358,7 @@ void pauseADBlock() {
         abort_instance("pauseADBlock", "Failed to open hosts file: %s", hostsPath);
     }
     char string[1024];
-    while(fgets(string, sizeof(string), hostsFile) != NULL) fprintf(backupHostsFile, "%s", string);
+    while(fgets(string, sizeof(string), hostsFile)) fprintf(backupHostsFile, "%s", string);
     fclose(backupHostsFile);
     fprintf(hostsFile, "127.0.0.1 localhost\n::1 localhost\n");
     fclose(hostsFile);
@@ -380,7 +380,7 @@ void resumeADBlock() {
             abort_instance("resumeADBlock", "Failed to open hosts file: %s", hostsPath);
         }
         char string[1024];
-        while(fgets(string, sizeof(string), backupHostsFile) != NULL) fprintf(hostsFile, "%s", string);
+        while(fgets(string, sizeof(string), backupHostsFile)) fprintf(hostsFile, "%s", string);
         fclose(hostsFile);
         fclose(backupHostsFile);
         chmod(hostsPath, 0644);
@@ -393,7 +393,7 @@ void resumeADBlock() {
     else {
         consoleLog(LOG_LEVEL_INFO, "resumeADBlock", "No backup hosts file found to resume, force resuming protection and running hosts update as a fallback action");
         putConfig("adblock_switch", 0);
-        // i've come to the conclusion that i should have an boolean for this action
+        // i've come to the conclusion that i should have a boolean for this action
         // to stop running --update-hosts everytime.
         if(!shouldNotForceReMalwackUpdateNextTime) {
             if(executeShellCommands("/data/adb/modules/Re-Malwack/rmlwk.sh", (char * const[]){"/data/adb/modules/Re-Malwack/rmlwk.sh", "--hoshiko", "--update-hosts"}) == 0) shouldNotForceReMalwackUpdateNextTime = true;
@@ -437,12 +437,12 @@ void refreshBlockedCounts() {
     FILE *hostsThingMod = fopen(hostsPath, "r");
     if(!hostsThingMod) abort_instance("refreshBlockedCounts", "Failed to open %s for reading to update blocklist count", hostsPath);
     char contentSizeMod[1024];
-    while(fgets(contentSizeMod, sizeof(contentSizeMod), hostsThingMod) != NULL) if(strncmp(contentSizeMod, "0.0.0.0 ", 8) == 0) blockedMod++;
+    while(fgets(contentSizeMod, sizeof(contentSizeMod), hostsThingMod)) if(strncmp(contentSizeMod, "0.0.0.0 ", 8) == 0) blockedMod++;
     fclose(hostsThingMod);
     FILE *hostsThingSys = fopen(systemHostsPath, "r");
     if(!hostsThingSys) abort_instance("refreshBlockedCounts", "Failed to open %s for reading to update blocklist count", systemHostsPath);
     char contentSizeSys[1024];
-    while(fgets(contentSizeSys, sizeof(contentSizeSys), hostsThingSys) != NULL) if(strncmp(contentSizeSys, "0.0.0.0 ", 8) == 0) blockedSys++;
+    while(fgets(contentSizeSys, sizeof(contentSizeSys), hostsThingSys)) if(strncmp(contentSizeSys, "0.0.0.0 ", 8) == 0) blockedSys++;
     fclose(hostsThingSys);
     FILE *sysCountFile = fopen(combineStringsFormatted("%s/counts/blocked_sys.count", persistDir), "w");
     if(!sysCountFile) abort_instance("refreshBlockedCounts", "Failed to open %s to update adblock count", combineStringsFormatted("%s/counts/blocked_sys.count", persistDir));
@@ -480,7 +480,7 @@ void killDaemonWhenSignaled(int sig) {
 }
 
 void checkIfModuleExists(void) {
-    DIR *modulePath = opendir(MODPATH);
+    DIR *modulePath = opendir("/data/adb/modules/Re-Malwack");
     if(!modulePath) abort_instance("checkIfModuleExists", "Failed to open the module directory, please install Re-Malwack to proceed!");
     closedir(modulePath);
 }
