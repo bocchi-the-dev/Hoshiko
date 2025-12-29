@@ -52,8 +52,9 @@ extern const char *killDaemon;
 
 // macro function for creating directories regardless of their parent directory.
 #define makeDir(thisDirName) executeShellCommands("su", (char * const[]){"su", "-c", "mkdir", "-p", basename(thisDirName)});
+#define MAX_PACKAGE_ID_LENGTH 36 // max package id length.
 
-// used for logging shits
+// used for logging stuff'
 enum elogLevel {
     LOG_LEVEL_INFO,
     LOG_LEVEL_WARN,
@@ -68,7 +69,7 @@ enum daemonProcessState {
     NOT_RUNNING_CANT_RUN
 };
 
-// used for toggling the daemon shit
+// used for toggling the daemon.
 enum daemonState {
     ENABLE_ENABLED,
     DISABLE_DISABLED

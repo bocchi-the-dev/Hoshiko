@@ -42,21 +42,20 @@ const char *systemHostsPath = "/system/etc/hosts";
 
 int main(void) {
     makeDir(daemonLogs);
+    checkIfModuleExists();
     version = grepProp("version", modulePropFile);
-    if(!version) abort_instance("main-yuki", "Could not find 'version' in module.prop");
+    if(!version) abort_instance("main-yuki", "Can't find 'version' in module.prop");
     versionCode = grepProp("versionCode", modulePropFile);
-    if(!versionCode) abort_instance("main-yuki", "Could not find 'versionCode' in module.prop");
+    if(!versionCode) abort_instance("main-yuki", "Can't find 'versionCode' in module.prop");
     consoleLog(LOG_LEVEL_INFO, "main-yuki", "Hoshiko's yuki with Re-Malwack %s (versionCode: %s) is starting...", version, versionCode);
     printBannerWithRandomFontStyle();
-    checkIfModuleExists();
     appendAlyaProps();
     if(getuid()) abort_instance("main-yuki", "daemon is not running under root privilages.");
     // force stop termux instance if it's found to be in top. Just to be sure that 
     // termux shouldn't handle the loop and it can't run some basic commands, that's why im stopping termux users.
     if(getCurrentPackage() != NULL && strcmp(getCurrentPackage(), "com.termux") == 0) {
-        consoleLog(LOG_LEVEL_WARN, "main-yuki", "Sorry termux user, you have to go.");
-        wipePointers();
-        executeShellCommands("exit", (char * const[]){ "exit", "1", NULL });
+        sleep(3);
+        if(strcmp(getCurrentPackage(), "com.termux") == 0) abort_instance("main-yuki", "Termux is not supposed to be here.");
     }
     // set the variable to true to load the packages for the first time.
     loadPackagesAgain = true;
@@ -78,7 +77,7 @@ int main(void) {
             // clean packageArray if it's not already wiped 
             freePointer((void **)&packageArray);
             char stringsToFetch[1000];
-            packageArray = malloc(sizeof(char *) * 300);
+            packageArray = malloc(MAX_PACKAGE_ID_LENGTH * 23);
             FILE *packageLists = fopen(daemonPackageLists, "r");
             if(!packageLists) abort_instance("main-yuki", "Failed to reopen package list file.");
             // reset the index count back to zero.
@@ -88,11 +87,18 @@ int main(void) {
             if(executeShellCommands("su", (char * const[]){"su", "-c", "cp", "-af", daemonPackageLists, "/data/adb/Re-Malwack/previousDaemonList", NULL}) != 0) abort_instance("main-yuki", "Failed to backup the daemon package lists, please try again!");
             // fill the array once again.
             while(fgets(stringsToFetch, sizeof(stringsToFetch), packageLists) && i < 100) {
-                if(stringsToFetch[0] == '\0') continue;
+                // skip the "thing" if it's a comment or an empty line.
+                if(stringsToFetch[0] == '\0' || stringsToFetch[0] == '#') continue;
                 stringsToFetch[strcspn(stringsToFetch, "\n")] = 0;
-                packageArray[i] = malloc(sizeof(char *));
+                // check if the package id exceeds more than MAX_PACKAGE_ID_LENGTH AND SKIP IT IF IT DOES!
+                if(strlen(stringsToFetch) > 35) {
+                    consoleLog(LOG_LEVEL_DEBUG, "main-yuki", "sayanora! %s nein nein, strlen: %d", strlen(stringsToFetch));
+                    consoleLog(LOG_LEVEL_WARN, "main-yuki", "Package: %s cannot be added to the blocklist because it exceeds the maximum package id length.");
+                    continue;
+                }
+                packageArray[i] = malloc(MAX_PACKAGE_ID_LENGTH);
                 if(!packageArray[i]) abort_instance("main-yuki", "Failed to prepare %d st/th array for caching package list.", i);
-                sprintf(packageArray[i], "%s", stringsToFetch);
+                snprintf(packageArray[i], MAX_PACKAGE_ID_LENGTH, "%s", stringsToFetch);
                 i++;
             }
             fclose(packageLists);

@@ -126,7 +126,7 @@ bool executeShellCommands(const char *command, char *const args[]) {
         break;
         default:
             consoleLog(LOG_LEVEL_DEBUG, "executeShellCommands", "Waiting for current %d to finish", ProcessID);
-            consoleLog(LOG_LEVEL_DEBUG, "executeShellCommands", "Finished loggin' shit - switch");
+            consoleLog(LOG_LEVEL_DEBUG, "executeShellCommands", "Finished loggin' things - switch");
             int status;
             wait(&status);
             return (WIFEXITED(status)) ? WEXITSTATUS(status) : false;
@@ -134,7 +134,7 @@ bool executeShellCommands(const char *command, char *const args[]) {
     // me: shut up compiler
     // evil gurt: yo
     // me: shut up
-    consoleLog(LOG_LEVEL_DEBUG, "executeShellCommands", "Finished loggin' shit - function scope");
+    consoleLog(LOG_LEVEL_DEBUG, "executeShellCommands", "Finished loggin' things - local scope");
     return false;
 }
 
@@ -481,14 +481,14 @@ void killDaemonWhenSignaled(int sig) {
 
 void checkIfModuleExists(void) {
     DIR *modulePath = opendir("/data/adb/modules/Re-Malwack");
-    if(!modulePath) abort_instance("checkIfModuleExists", "Failed to open the module directory, please install Re-Malwack to proceed!");
+    if(!modulePath) abort_instance("checkIfModuleExists", "Failed to open the module directory, please install Re-Malwack if not already!");
     closedir(modulePath);
 }
 
 void appendAlyaProps(void) {
     int appendedProps = 0;
     int defaultPropertyValues[] = {0, 1, -1};
-    char *defaultPropertyNames[] = {"is_daemon_running", "enable_daemon", "current_daemon_pid"};    
+    char *defaultPropertyNames[] = {"is_daemon_running", "enable_daemon", "current_daemon_pid"};
     consoleLog(LOG_LEVEL_INFO, "appendAlyaProps", "Appending %d properties that might not exist...", sizeof(defaultPropertyNames) / sizeof(defaultPropertyNames[0]));
     for(size_t i = 0; i < sizeof(defaultPropertyNames) / sizeof(defaultPropertyNames[0]); i++) {
         if(putConfig(defaultPropertyNames[i], defaultPropertyValues[i]) != 0) {
